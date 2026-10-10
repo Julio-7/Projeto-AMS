@@ -70,14 +70,32 @@ dados de temperatura, desgaste; histórico de falhas; causas registradas; interv
 <!--
 Perguntas que guiam o preenchimento (uma por dimensão):
   - Observabilidade: existe algo que muda a decisão e o agente não mede?
+
+    Parcial, porque o agente possui históricos de falhas e dados dos sensores, mas não conhece todas as condições reais das máquinas
+
   - Número de agentes: existe alguém cujas ações mudam o seu resultado?
     Um humano que reage ao agente conta.
+
+    Um único agente analisa os dados e prioriza as máquinas com mais falhas
+
   - Determinismo: a mesma ação no mesmo estado dá sempre o mesmo efeito?
+    Estocástico, as falhas futuras são incertas, mesmo com base no histórico e nos sensores
+   
+
   - Episódico ou sequencial: a decisão de agora afeta as decisões seguintes?
+    Sequencial, as decisões consideram falhas e manutenções anteriores para definir prioridades futuras
+
   - Estático ou dinâmico: o ambiente muda enquanto o agente delibera?
+    Dinâmico, as condições das máquinas e os registros de falhas mudam com o tempo
+    	
   - Discreto ou contínuo: estados e ações são contáveis?
+    Contínuo, Os sensores medem temperatura, rotação e torque, mas a prioridade é definida por categorias
+
   - Conhecido ou desconhecido: o agente sabe de antemão as regras? (Trata do
     que ele SABE, não do que ele VÊ.)
+    Desconhecido, o comportamento das máquinas e as probabilidades de falhas precisam ser aprendidos a partir dos dados históricos
+
+
   Cada classificação vem com uma frase de justificativa — a etiqueta sozinha
   não vale nada.
 -->
@@ -85,6 +103,48 @@ Perguntas que guiam o preenchimento (uma por dimensão):
 
 [uma linha por dimensão: a classificação e a frase de
 justificativa — começando por observabilidade e determinismo]
+
+Observabilidade - Parcial, porque o agente possui históricos de falhas e dados dos sensores, mas não conhece todas as condições reais das máquinas
+
+Número de agentes - Um único agente analisa os dados e prioriza as máquinas com mais falhas
+
+Determinismo - Estocástico, as falhas futuras são incertas, mesmo com base no histórico e nos sensores
+
+Episódico ou sequencial - Sequencial, as decisões consideram falhas e manutenções anteriores para definir prioridades futuras
+
+Estático ou dinâmico - Dinâmico, as condições das máquinas e os registros de falhas mudam com o tempo
+
+Discreto ou contínuo - Contínuo, Os sensores medem temperatura, rotação e torque, mas a prioridade é definida por categorias
+
+Conhecido ou desconhecido - Desconhecido, o comportamento das máquinas e as probabilidades de falhas precisam ser aprendidos a partir dos dados históricos
+
+
+ | Dimensão | Minha classificação | Justificativa |
+| --- | --- | --- |
+| Observabilidade | Parcial | O agente possui históricos de falhas e dados dos sensores, mas não conhece todas as condições reais das máquinas. |
+| Número de agentes | Único | Um único agente analisa os dados e prioriza as máquinas com mais falhas. |
+| Determinismo | Estocástico | As falhas futuras são incertas, mesmo com base no histórico e nos sensores. |
+| Episódico ou sequencial | Sequencial | As decisões consideram falhas e manutenções anteriores para definir prioridades futuras. |
+| Estático ou dinâmico | Dinâmico | As condições das máquinas e os registros de falhas mudam com o tempo. |
+| Discreto ou contínuo | Contínuo | Os sensores coletam grandezas contínuas, como temperatura, rotação e torque, embora a prioridade seja classificada em categorias. |
+| Conhecido ou desconhecido | Desconhecido | O comportamento das máquinas e as probabilidades de falhas precisam ser aprendidos a partir dos dados históricos. |
+
+**O que a tabela de consequências obriga no meu projeto** (conferir no
+`tabela-de-consequencias.pdf` e colar aqui as linhas que se aplicam):
+
+[responda aqui — pode começar pelas que NÃO se aplicam, que valem igual]
+Tabela de Consequencia 
+
+| Se o ambiente é... | O projeto precisa de... | 
+| --- | --- |
+| Parcialmente observável | O agente precisa manter um histórico das falhas, das manutenções e das condições das máquinas para tomar decisões mais precisas |
+| Unico agente | O agente deve centralizar a análise dos dados e a priorização das máquinas, encaminhando casos críticos ao supervisor. | 
+| Estocástico | O agente deve considerar a incerteza das falhas futuras e utilizar o histórico para estimar quais máquinas apresentam maior risco | 
+| Sequencial | O agente deve considerar as falhas e manutenções anteriores, avaliando se os problemas voltaram a ocorrer após as intervenções |
+| Dinâmico | O agente precisa atualizar as prioridades conforme surgem novas falhas, leituras de sensores e registros de manutenção. | 
+| Contínuo | O agente deve transformar as leituras contínuas dos sensores, como temperatura, rotação e torque, em informações úteis para classificar e priorizar as máquinas |
+| Desconhecido | O projeto deve registrar os resultados das decisões e das manutenções para aprender sobre o comportamento das máquinas e melhorar as avaliações futuras |
+
 
 ---
 
@@ -179,3 +239,60 @@ Perguntas que guiam o preenchimento:
 
 [os cinco componentes do seu subproblema: estado inicial,
 ações, transição, teste de objetivo, custo]
+
+— diagnostico.PEQUENA
+  1. estado é hashable ✅
+  2. transição é função ✅
+  3. ações estáveis na ordem ✅
+  4. custo é positivo ou zero ✅
+  5. objetivo é alcançável ✅
+  6. estado não guarda o caminho ✅
+  resumo: 6 ✅ · 0 ⚠️ · 0 ❌
+
+— diagnostico.MAIOR
+  1. estado é hashable ✅
+  2. transição é função ✅
+  3. ações estáveis na ordem ✅
+  4. custo é positivo ou zero ❌
+     a ação 'comparar a latência fora e dentro da rede' em (('chamar a rota de saúde do provedor', 'conferir o painel de cota da chave', 'renovar a credencial em ambiente isolado'), ('conferir o painel de cota da chave',)) custa -10.0. O que fazer: custo negativo quebra as garantias de otimalidade (o custo uniforme e o A* assumem custos não negativos) — reveja o custo() ou modele o ganho dentro do estado.
+  5. objetivo é alcançável ✅
+  6. estado não guarda o caminho ✅
+  resumo: 5 ✅ · 0 ⚠️ · 1 ❌
+
+— consultas.PEQUENA
+  1. estado é hashable ✅
+  2. transição é função ✅
+  3. ações estáveis na ordem ✅
+  4. custo é positivo ou zero ✅
+  5. objetivo é alcançável ✅
+  6. estado não guarda o caminho ✅
+  resumo: 6 ✅ · 0 ⚠️ · 0 ❌
+
+— consultas.MAIOR
+  1. estado é hashable ✅
+  2. transição é função ✅
+  3. ações estáveis na ordem ✅
+  4. custo é positivo ou zero ✅
+  5. objetivo é alcançável ✅
+  6. estado não guarda o caminho ✅
+  resumo: 6 ✅ · 0 ⚠️ · 0 ❌
+
+— conformidade.PEQUENA
+  1. estado é hashable ✅
+  2. transição é função ✅
+  3. ações estáveis na ordem ✅
+  4. custo é positivo ou zero ✅
+  5. objetivo é alcançável ✅
+  6. estado não guarda o caminho ✅
+  resumo: 6 ✅ · 0 ⚠️ · 0 ❌
+
+— conformidade.MAIOR
+  1. estado é hashable ✅
+  2. transição é função ✅
+  3. ações estáveis na ordem ✅
+  4. custo é positivo ou zero ✅
+  5. objetivo é alcançável ✅
+  6. estado não guarda o caminho ✅
+  resumo: 6 ✅ · 0 ⚠️ · 0 ❌
+
+Há vermelho acima — cada mensagem diz o que fazer. Conserte e rode de novo.
